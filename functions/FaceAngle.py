@@ -29,7 +29,6 @@ def check_head_position(image: np.ndarray,
     if target_position not in ANGLE_THRESHOLDS:
         return {"passed": False, "reason": "invalid_target", "pitch": 0.0, "yaw": 0.0, "roll": 0.0}
 
-    # MediaPipe her zaman RGB bekler
     image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
     image.flags.writeable = False
     results = face_mesh.process(image)
@@ -58,7 +57,6 @@ def check_head_position(image: np.ndarray,
     face_2d = np.array(face_2d, dtype=np.float64)
     face_3d = np.array(face_3d, dtype=np.float64)
 
-    # Kamera Matrisi (Düzenlendi: cx = w/2, cy = h/2 olmalı)
     focal_length = 1 * img_w
     cam_matrix = np.array([
         [focal_length, 0, img_w / 2],
@@ -68,7 +66,6 @@ def check_head_position(image: np.ndarray,
 
     dist_matrix = np.zeros((4, 1), dtype=np.float64)
 
-    # Açıları Hesapla
     _, rot_vec, trans_vec = cv2.solvePnP(face_3d, face_2d, cam_matrix, dist_matrix)
     rmat, _ = cv2.Rodrigues(rot_vec)
     angles, _, _, _, _, _ = cv2.RQDecomp3x3(rmat)
@@ -77,7 +74,6 @@ def check_head_position(image: np.ndarray,
     y = angles[1] * 360  # Yaw
     z = angles[2] * 360  # Roll
 
-    # --- HEDEF AÇI KONTROLÜ ---
     limits = ANGLE_THRESHOLDS[target_position]
     y_min, y_max = limits["y"]
     x_min, x_max = limits["x"]
@@ -85,13 +81,11 @@ def check_head_position(image: np.ndarray,
     is_yaw_ok = y_min <= y <= y_max
     is_pitch_ok = x_min <= x <= x_max
 
-    # 90 derece profillerde Gimbal Lock (z ekseni) etkisini bypass ediyoruz
     if target_position in ["left_90", "right_90"]:
         is_passed = is_yaw_ok
     else:
         is_passed = is_yaw_ok and is_pitch_ok
 
-    # Saf Data (Dictionary) döndür
     return {
         "passed": bool(is_passed),
         "target": target_position,
@@ -102,7 +96,6 @@ def check_head_position(image: np.ndarray,
     }
 
 
-# --- LOKAL TEST İÇİN ÖRNEK KULLANIM ---
 if __name__ == "__main__":
     mp_face_mesh = mp.solutions.face_mesh
     face_mesh = mp_face_mesh.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5)
@@ -127,10 +120,8 @@ if __name__ == "__main__":
 
         current_target = targets[current_target_index]
 
-        # 1. YAZDIĞIMIZ FONKSİYONU ÇAĞIRIYORUZ
         result = check_head_position(frame, face_mesh, target_position=current_target)
 
-        # 2. FONKSİYONDAN GELEN SONUÇLARLA ÇİZİM YAPIYORUZ
         if result["reason"] != "no_face":
             color = (0, 255, 0) if result["passed"] else (0, 0, 255)
             status_text = "HEDEF BULUNDU!" if result["passed"] else "ACIDAN CIKTI"

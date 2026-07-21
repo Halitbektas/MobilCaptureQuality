@@ -5,14 +5,12 @@ import mediapipe as mp
 
 mp_face_detection = mp.solutions.face_detection
 
-def check_face_in_image(image: np.ndarray, min_confidence: float = 0.6) -> Dict[str, Any]:
+def check_face_in_image(image: np.ndarray, face_detection_model) -> Dict[str, Any]:
     rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     rgb_image.flags.writeable = False
 
-    with mp_face_detection.FaceDetection(min_detection_confidence=min_confidence) as face_detection:
-        results = face_detection.process(rgb_image)
+    results = face_detection_model.process(rgb_image)
 
-    # Görüntü tekrar yazılabilir yapılıyor (sonraki işlemler için)
     rgb_image.flags.writeable = True
 
     face_count = 0
@@ -53,7 +51,6 @@ def check_face_in_image(image: np.ndarray, min_confidence: float = 0.6) -> Dict[
 
 
 if __name__ == "__main__":
-    # Test için kameradan anlık görüntü alarak deneyebilirsin:
     cap = cv2.VideoCapture(0)
 
     print("Test için kameraya bakın. Çıkmak için 'q' tuşuna basın.")
@@ -65,12 +62,10 @@ if __name__ == "__main__":
 
         result = check_face_in_image(frame)
 
-        # Sonucu ekrana yazdır
         text = f"Durum: {'GECTI' if result['passed'] else 'RED'} - Sebep: {result['reason']}"
         color = (0, 255, 0) if result['passed'] else (0, 0, 255)
         cv2.putText(frame, text, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
 
-        # Eğer bir yüz varsa kutu çiz
         if result['bbox']:
             x, y, w, h = result['bbox']
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
