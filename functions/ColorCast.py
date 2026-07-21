@@ -30,6 +30,6 @@ def check_color_cast(image: np.ndarray, cast_t: float = 35.0, max_size: int = 48
 
 
 if __name__ == "__main__":
-    test_image = cv2.imread("/Users/halitbektas/Desktop/MobileCaptureQuality/test_images/levle3_42.jpg")
+    test_image = cv2.imread("/Users/halitbektas/Desktop/MobileCaptureQuality/test_images/Ekran Resmi 2026-07-18 15.11.36.png")
     result = check_color_cast(test_image)
     print(f"Renk Tonu Testi Sonucu: {result}")

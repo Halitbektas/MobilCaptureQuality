@@ -47,6 +47,6 @@ def check_over_under_exposed(image: np.ndarray,
 
 if __name__ == "__main__":
     # Test için karanlık bir matris oluşturalım (örn: az ışıklı ortam)
-    test_image = cv2.imread("/Users/halitbektas/Desktop/MobileCaptureQuality/test_images/2.jpeg")
+    test_image = cv2.imread("/Users/halitbektas/Desktop/MobileCaptureQuality/test_images/images.jpeg")
     result = check_over_under_exposed(test_image)
     print(f"Pozlama Testi Sonucu: {result}")
