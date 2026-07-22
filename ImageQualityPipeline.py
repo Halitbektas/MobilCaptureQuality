@@ -3,6 +3,7 @@ import mediapipe as mp
 import numpy as np
 import time
 from typing import Dict, Any
+from collections import deque
 
 from functions.FaceControl import check_face_in_image
 from functions.ColorCast import check_color_cast
@@ -83,6 +84,10 @@ if __name__ == "__main__":
     print("Pipeline Testi Basladi.")
     print("Sonraki hedefe gecmek icin 'N' tusuna basin.")
 
+    buffer_size = 5
+    success_threshold = 4
+
+    success_buffer = deque(maxlen=buffer_size)
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret: break
@@ -93,10 +98,17 @@ if __name__ == "__main__":
         result = pipeline.process_image(frame, target_angle=current_target)
         fps = int(1 / (time.time() - start))
 
+        is_current_frame_success = (result["status"] == "success")
+        success_buffer.append(is_current_frame_success)
+
+        stable_success_count = sum(success_buffer)
+
+        is_stable_success = stable_success_count >= success_threshold
+
         # --- UI ÇİZİMLERİ ---
         if result["bbox"]:
             x, y, w, h = result["bbox"]
-            color = (0, 255, 0) if result["status"] == "success" else (0, 165, 255)
+            color = (0, 255, 0) if is_stable_success else (0, 165, 255)
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
 
         y_offset = 30
@@ -112,11 +124,14 @@ if __name__ == "__main__":
             cv2.putText(frame, text, (15, y_offset), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
             y_offset += 25
 
-        if result["status"] == "success":
-            cv2.putText(frame, "MUKEMMEL CEKIM!", (15, y_offset + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+        if is_stable_success:
+            cv2.putText(frame, "MUKEMMEL CEKIM! (STABIL)", (15, y_offset + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
         else:
-            reason_text = str(result["reason"]).replace("_", " ").upper()
+            reason_text = str(result["reason"]).replace("_", " ").upper() if result["reason"] else "SABIT KALIN..."
             cv2.putText(frame, f"HATA: {reason_text}", (15, y_offset + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+
+        cv2.putText(frame, f"Buffer: [{stable_success_count}/{buffer_size}]", (15, y_offset + 40),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
         cv2.putText(frame, f"FPS: {fps}", (frame.shape[1] - 100, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         cv2.putText(frame, "[N] Sonraki Hedef  |  [ESC] Cikis", (15, frame.shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
@@ -128,6 +143,7 @@ if __name__ == "__main__":
             break
         elif key == ord('n'):
             current_target_index = (current_target_index + 1) % len(targets)
+            success_buffer.clear()
 
     pipeline.close()
     cap.release()
