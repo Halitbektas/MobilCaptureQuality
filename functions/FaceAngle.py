@@ -59,8 +59,8 @@ def check_head_position(image: np.ndarray,
 
     focal_length = 1 * img_w
     cam_matrix = np.array([
-        [focal_length, 0, img_w / 2],
-        [0, focal_length, img_h / 2],
+        [focal_length, 0, img_h / 2],
+        [0, focal_length, img_w / 2],
         [0, 0, 1]
     ], dtype="double")
 
@@ -100,9 +100,6 @@ if __name__ == "__main__":
     mp_face_mesh = mp.solutions.face_mesh
     face_mesh = mp_face_mesh.FaceMesh(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-    mp_drawing = mp.solutions.drawing_utils
-    drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
-
     cap = cv2.VideoCapture(0)
 
     targets = list(ANGLE_THRESHOLDS.keys())
@@ -117,9 +114,9 @@ if __name__ == "__main__":
             break
 
         start = time.time()
-
         current_target = targets[current_target_index]
 
+        # Fonksiyon içeride frame üzerine çizim yapacak
         result = check_head_position(frame, face_mesh, target_position=current_target)
 
         if result["reason"] != "no_face":

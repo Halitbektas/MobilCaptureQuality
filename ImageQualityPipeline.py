@@ -26,15 +26,15 @@ class ImageQualityPipeline:
         angles = None
 
         res = check_severe_blur(image)
-        ui_states["Blur"] = "PASS" if res["passed"] else "FAIL"
+        ui_states["Blur"] = f"PASS {res['score']}" if res["passed"] else f"FAIL {res['score']}"
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states)
 
         res = check_over_under_exposed(image)
-        ui_states["Exposure"] = "PASS" if res["passed"] else "FAIL"
+        ui_states["Exposure"] = f"PASS {res['dark_ratio']} | {res['bright_ratio']}" if res["passed"] else f"FAIL {res['dark_ratio']} | {res['bright_ratio']}"
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states)
 
         res = check_color_cast(image)
-        ui_states["Color"] = "PASS" if res["passed"] else "FAIL"
+        ui_states["Color"] = f"PASS" if res["passed"] else "FAIL"
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states)
 
         res = check_face_in_image(image, self.face_detection)
@@ -42,12 +42,12 @@ class ImageQualityPipeline:
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states)
         bbox = res["bbox"]
 
-        res = check_face_size(image, bbox)
+        res = check_face_size(image, bbox, 0.05)
         ui_states["Size"] = "PASS" if res["passed"] else "FAIL"
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states, bbox)
 
-        res = check_extreme_shadow(image, bbox)
-        ui_states["Shadow"] = "PASS" if res["passed"] else "FAIL"
+        res = check_extreme_shadow(image, bbox, 60.0)
+        ui_states["Shadow"] = f"PASS {res['shadow_diff']}" if res["passed"] else f"FAIL {res['shadow_diff']}"
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states, bbox)
 
         res = check_head_position(image, self.face_mesh, target_angle)
@@ -104,8 +104,8 @@ if __name__ == "__main__":
         y_offset += 30
 
         for key, state in result["ui_states"].items():
-            if state == "PASS": color = (0, 255, 0)
-            elif state == "FAIL": color = (0, 0, 255)
+            if "PASS" in state: color = (0, 255, 0)
+            elif "FAIL" in state: color = (0, 0, 255)
             else: color = (150, 150, 150)
 
             text = f"{key}: {state}"
