@@ -34,16 +34,16 @@ class ImageQualityPipeline:
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states)
 
         res = check_color_cast(image)
-        ui_states["Color"] = f"PASS" if res["passed"] else "FAIL"
+        ui_states["Color"] = f"PASS {res['score']}" if res["passed"] else f"FAIL {res['score']}"
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states)
 
         res = check_face_in_image(image, self.face_detection)
-        ui_states["Face Count"] = "PASS" if res["passed"] else "FAIL"
+        ui_states["Face Count"] = f"PASS {res['face_count']}" if res["passed"] else f"FAIL {res['face_count']}"
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states)
         bbox = res["bbox"]
 
         res = check_face_size(image, bbox, 0.05)
-        ui_states["Size"] = "PASS" if res["passed"] else "FAIL"
+        ui_states["Size"] = f"PASS {res['face_ratio']}" if res["passed"] else f"FAIL {res['face_ratio']}"
         if not res["passed"]: return self._compile_result(False, res["reason"], ui_states, bbox)
 
         res = check_extreme_shadow(image, bbox, 60.0)
