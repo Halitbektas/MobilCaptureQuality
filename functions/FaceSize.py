@@ -4,7 +4,7 @@ from typing import Dict, Union, Tuple
 import mediapipe as mp
 def check_face_size(image: np.ndarray,
                     bbox: Tuple[int, int, int, int],
-                    min_area_ratio: float = 0.1,
+                    min_area_ratio: float = 0.2,
                     max_area_ratio: float = 0.55,
                     edge_margin: int = 15) -> Dict[str, Union[bool, float, str]]:
 

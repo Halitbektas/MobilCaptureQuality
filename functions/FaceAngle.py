@@ -5,19 +5,15 @@ import time
 from typing import Dict, Union
 
 ANGLE_THRESHOLDS = {
-    # Merkez (x: ~4, y: ~0)
-    "front": {"y": (-2.5, 2.5), "x": (-1.0, 5.5)},
+    "front": {"y": (-2.5, 2.5), "x": (-1.0, 4.5)},
 
-    # Sola Dönüşler (y ekseni negatif)
-    "left_45": {"y": (-7.5, -2.5), "x": (-1.0, 6.5)},
-    "left_90": {"y": (-15.0, -7.5), "x": (-1.0, 8.5)},
+    "left_45": {"y": (-6.5, -2.5), "x": (-1.0, 6.5)},
+    "left_90": {"y": (-30.0, -6.5), "x": (-1.0, 8.5)},
 
-    # Sağa Dönüşler (y ekseni pozitif)
-    "right_45": {"y": (2.5, 7.5), "x": (-1.0, 6.5)},
-    "right_90": {"y": (7.5, 15.0), "x": (-1.0, 8.5)},
+    "right_45": {"y": (2.5, 6.5), "x": (-1.0, 6.5)},
+    "right_90": {"y": (6.5, 30.0), "x": (-1.0, 8.5)},
 
-    # Yukarı Bakışlar (x ekseni pozitif artar)
-    "chin_up": {"y": (-3.0, 3.0), "x": (6.0, 12.0)},
+    "chin_up": {"y": (-3.0, 3.0), "x": (5.5, 12.0)},
     "left_upper_diag": {"y": (-7.5, -2.0), "x": (5.5, 12.0)},
     "right_upper_diag": {"y": (2.0, 7.5), "x": (5.5, 12.0)}
 }
@@ -29,7 +25,7 @@ def check_head_position(image: np.ndarray,
     if target_position not in ANGLE_THRESHOLDS:
         return {"passed": False, "reason": "invalid_target", "pitch": 0.0, "yaw": 0.0, "roll": 0.0}
 
-    image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image.flags.writeable = False
     results = face_mesh.process(image)
     image.flags.writeable = True
@@ -112,11 +108,10 @@ if __name__ == "__main__":
         ret, frame = cap.read()
         if not ret:
             break
-
+        frame = cv2.flip(frame, 1)
         start = time.time()
         current_target = targets[current_target_index]
 
-        # Fonksiyon içeride frame üzerine çizim yapacak
         result = check_head_position(frame, face_mesh, target_position=current_target)
 
         if result["reason"] != "no_face":

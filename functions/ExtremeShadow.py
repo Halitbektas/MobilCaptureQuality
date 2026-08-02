@@ -6,7 +6,7 @@ from functions.FaceControl import check_face_in_image
 
 def check_extreme_shadow(image: np.ndarray,
                          bbox: Tuple[int, int, int, int],
-                         shadow_thresh: float = 40.0) -> Dict[str, Union[bool, float, str]]:
+                         shadow_thresh: float = 60.0) -> Dict[str, Union[bool, float, str]]:
 
     x, y, w, h = bbox
     img_h, img_w = image.shape[:2]

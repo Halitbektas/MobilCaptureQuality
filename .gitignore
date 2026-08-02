@@ -1,3 +1,7 @@
 /venv/
 .idea
 /test_images/
+/Model
+OcclusionTest.py
+__pycache__/
+*.pyc
